@@ -1,0 +1,12 @@
+# Temporary and log files
+*.log
+*.tmp
+*.bak
+cookie*.txt
+admin_cookie*.txt
+
+# OS and Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
