@@ -5,70 +5,59 @@
     include_once '../lib/requestHandler.php';
     $DatabaseCo = new DatabaseConn();
 
-	if(isset($_FILES['banner-1'])){
-		$target_dir='../img/banners/';
-		$imagename=$_FILES['banner-1']['name'];
-		$imageFileType = pathinfo($imagename,PATHINFO_EXTENSION);
-		$imgConvertedName='banner-1'.'.'.$imageFileType;
-		$target_file = $target_dir.$imgConvertedName;
-		if($imageFileType != "jpg" && $imageFileType != "jpeg") {
-			echo "<script>alert('Sorry, only JPG & JPEG files are allowed.')</script>";
-			echo "<script>window.location='SiteHomepageBanner.php'</script>";
-		}elseif($_FILES["banner-1"]["size"] > 1000000) {
-			echo "<script>alert('your file size is more than 1MB.');</script>";
-			echo "<script>window.location='SiteHomepageBanner.php';</script>";
-		}else{
-			if(move_uploaded_file($_FILES['banner-1']['tmp_name'],$target_file) == 1){
-				$regThirdQry=$DatabaseCo->dbLink->query("UPDATE site_config SET banner1='$imgConvertedName' WHERE id='1'");
-				echo "<script>alert('Banner 1 Uploaded Successfully');window.location='SiteHomepageBanner.php';</script>";
-			}else{
-				echo "<script>alert('Banner 1 size is too large or not image file.');window.location='SiteHomepageBanner.php';</script>";
-			}
+	/**
+	 * Handle banner upload with case-insensitive extension support, size validation,
+	 * and cache-busting unique filename generation.
+	 */
+	function handleBannerUpload($DatabaseCo, $fieldName, $dbColumn, $label) {
+		if (!isset($_FILES[$fieldName]) || $_FILES[$fieldName]['error'] === UPLOAD_ERR_NO_FILE) {
+			return;
 		}
+		if ($_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK) {
+			echo "<script>alert('{$label} upload failed (error code: " . (int)$_FILES[$fieldName]['error'] . ").');window.location='SiteHomepageBanner.php';</script>";
+			exit;
+		}
+
+		$targetDir = '../img/banners/';
+		$imageName = $_FILES[$fieldName]['name'];
+		$imageFileType = strtolower(pathinfo($imageName, PATHINFO_EXTENSION));
+		$allowedTypes = array('jpg', 'jpeg', 'png', 'webp');
+
+		if (!in_array($imageFileType, $allowedTypes, true)) {
+			echo "<script>alert('Sorry, only JPG, JPEG, PNG & WEBP files are allowed.');window.location='SiteHomepageBanner.php';</script>";
+			exit;
+		}
+		if ($_FILES[$fieldName]['size'] > 2097152) {
+			echo "<script>alert('Your file size is more than 2MB.');window.location='SiteHomepageBanner.php';</script>";
+			exit;
+		}
+		if (@getimagesize($_FILES[$fieldName]['tmp_name']) === false) {
+			echo "<script>alert('{$label} is not a valid image file.');window.location='SiteHomepageBanner.php';</script>";
+			exit;
+		}
+
+		$imgConvertedName = $fieldName . '-' . time() . '.' . $imageFileType;
+		$targetFile = $targetDir . $imgConvertedName;
+
+		if (move_uploaded_file($_FILES[$fieldName]['tmp_name'], $targetFile)) {
+			$safeName = mysqli_real_escape_string($DatabaseCo->dbLink, $imgConvertedName);
+			$DatabaseCo->dbLink->query("UPDATE site_config SET {$dbColumn}='{$safeName}' WHERE id='1'");
+			echo "<script>alert('{$label} Uploaded Successfully');window.location='SiteHomepageBanner.php';</script>";
+			exit;
+		}
+
+		echo "<script>alert('{$label} size is too large or could not be saved.');window.location='SiteHomepageBanner.php';</script>";
+		exit;
 	}
 
-	if(isset($_FILES['banner-2'])){
-		$target_dir='../img/banners/';
-		$imagename=$_FILES['banner-2']['name'];
-		$imageFileType = pathinfo($imagename,PATHINFO_EXTENSION);
-		$imgConvertedName='banner-2'.'.'.$imageFileType;
-		$target_file = $target_dir.$imgConvertedName;
-		if($imageFileType != "jpg" && $imageFileType != "jpeg") {
-			echo "<script>alert('Sorry, only JPG & JPEG files are allowed.')</script>";
-			echo "<script>window.location='SiteHomepageBanner.php'</script>";
-		}elseif($_FILES["banner-2"]["size"] > 1000000) {
-			echo "<script>alert('your file size is more than 1MB.');</script>";
-			echo "<script>window.location='SiteHomepageBanner.php';</script>";
-		}else{
-			if(move_uploaded_file($_FILES['banner-2']['tmp_name'],$target_file) == 1){
-				$regThirdQry=$DatabaseCo->dbLink->query("UPDATE site_config SET banner2='$imgConvertedName' WHERE id='1'");
-				echo "<script>alert('Banner 2 Uploaded Successfully');window.location='SiteHomepageBanner.php';</script>";
-			}else{
-				echo "<script>alert('Banner 2 size is too large or not image file.');window.location='SiteHomepageBanner.php';</script>";
-			}
-		}
-	}
+	$bannerConfigs = array(
+		array('field' => 'banner-1', 'column' => 'banner1', 'label' => 'Banner 1', 'formId' => 'bannerForm1'),
+		array('field' => 'banner-2', 'column' => 'banner2', 'label' => 'Banner 2', 'formId' => 'bannerForm2'),
+		array('field' => 'banner-3', 'column' => 'banner3', 'label' => 'Banner 3', 'formId' => 'bannerForm3'),
+	);
 
-	if(isset($_FILES['banner-3'])){
-		$target_dir='../img/banners/';
-		$imagename=$_FILES['banner-3']['name'];
-		$imageFileType = pathinfo($imagename,PATHINFO_EXTENSION);
-		$imgConvertedName='banner-3'.'.'.$imageFileType;
-		$target_file = $target_dir.$imgConvertedName;
-		if($imageFileType != "jpg" && $imageFileType != "jpeg") {
-			echo "<script>alert('Sorry, only JPG & JPEG files are allowed.')</script>";
-			echo "<script>window.location='SiteHomepageBanner.php'</script>";
-		}elseif($_FILES["banner-3"]["size"] > 1000000) {
-			echo "<script>alert('your file size is more than 1MB.');</script>";
-			echo "<script>window.location='SiteHomepageBanner.php';</script>";
-		}else{
-			if(move_uploaded_file($_FILES['banner-3']['tmp_name'],$target_file) == 1){
-				$regThirdQry=$DatabaseCo->dbLink->query("UPDATE site_config SET banner3='$imgConvertedName' WHERE id='1'");
-				echo "<script>alert('Banner 3 Uploaded Successfully');window.location='SiteHomepageBanner.php';</script>";
-			}else{
-				echo "<script>alert('Banner 3 size is too large or not image file.');window.location='SiteHomepageBanner.php';</script>";
-			}
-		}
+	foreach ($bannerConfigs as $cfg) {
+		handleBannerUpload($DatabaseCo, $cfg['field'], $cfg['column'], $cfg['label']);
 	}
 
 $SQL_SELECT_BANNER=$DatabaseCo->dbLink->query("SELECT banner1,banner2,banner3 FROM site_config WHERE id='1'");
@@ -126,34 +115,33 @@ $row=mysqli_fetch_object($SQL_SELECT_BANNER);
 					<div class="row">
 						<div class="box-body">
 							<div class="row">
+								<?php foreach ($bannerConfigs as $cfg) {
+									$col = $cfg['column'];
+									$bannerFile = isset($row->$col) ? $row->$col : '';
+									$bannerPath = '../img/banners/' . $bannerFile;
+									$hasBanner = ($bannerFile !== '' && file_exists($bannerPath));
+									$previewSrc = $hasBanner
+										? $bannerPath . '?v=' . (@filemtime($bannerPath) ?: time())
+										: '../img/no-banner.jpg';
+								?>
 								<div class="col-lg-4">
-									<form method="post" enctype="multipart/form-data" id="bannerForm1" action="">
+									<form method="post" enctype="multipart/form-data" id="<?php echo $cfg['formId']; ?>" action="">
 										<div class="box box-success siteLogo">
 											<div class="box-body">
-												<h4>Add / Edit Banner 1</h4>
+												<h4>Add / Edit <?php echo $cfg['label']; ?></h4>
 												<div class="row">
 													<div class="col-xs-12">
-														<?php 
-															if($row->banner1 !="" && file_exists('../img/banners/'.$row->banner1)){ 
-															?>
-														<img src="../img/banners/<?php if($row->banner1 != ''){ echo $row->banner1; }?>" class="img-responsive img-thumbnail">
-														<?php 
-															}else{
-															?>
-														<img src="../img/no-banner.jpg" class="img-responsive img-thumbnail">
-														<?php 
-															}
-															?>
+														<img src="<?php echo htmlspecialchars($previewSrc, ENT_QUOTES, 'UTF-8'); ?>" class="img-responsive img-thumbnail">
 													</div>
 													<div class="col-xs-12">
 														<p class="mt-5 fontS12"><b>Note</b>:- Banner size - <b class="text-danger">1351px(Width) X 591px(Height).</b></p>
 													</div>
 													<div class="col-xs-12">
 														<div class="form-group mt-10">
-															<input type="file" class="form-control" name="banner-1" data-validetta="required">
+															<input type="file" class="form-control" name="<?php echo $cfg['field']; ?>" accept=".jpg,.jpeg,.png,.webp,image/*" data-validetta="required">
 														</div>
 														<div class="col-xs-12">
-															<p class="fontS12"><b>Note:-</b>Only <b>jpg & jpeg</b> files supported.Max Size <b>1MB</b>.</p>
+															<p class="fontS12"><b>Note:-</b>Only <b>jpg, jpeg, png &amp; webp</b> files supported. Max Size <b>2MB</b>.</p>
 														</div>
 														<div class="col-xs-12">
 															<p class="fontS12"><b>Note:-</b>Press <b>Control + f5</b> if banner not reflecting after upload.</p>
@@ -168,70 +156,7 @@ $row=mysqli_fetch_object($SQL_SELECT_BANNER);
 										</div>
 									</form>
 								</div>
-								<div class="col-lg-4">
-									<form method="post" enctype="multipart/form-data" id="bannerForm2" action="">
-										<div class="box box-success siteLogo">
-											<div class="box-body">
-												<h4>Add / Edit Banner 2</h4>
-												<div class="row">
-													<div class="col-xs-12">
-														<img src="../img/banners/<?php if($row->banner2 != ''){ echo $row->banner2; }?>" class="img-responsive img-thumbnail">
-													</div>
-													<div class="col-xs-12">
-														<p class="mt-5 fontS12"><b>Note</b>:- Banner size - <b class="text-danger">1351px(Width) X 591px(Height).</b></p>
-													</div>
-													<div class="col-xs-12">
-														<div class="form-group mt-10">
-															<input type="file" class="form-control" name="banner-2" data-validetta="required">
-														</div>
-														<div class="col-xs-12">
-															<p class="fontS12"><b>Note:-</b>Only <b>jpg & jpeg</b> files supported.Max Size <b>1MB</b>.</p>
-														</div>
-														<div class="col-xs-12">
-															<p class="fontS12"><b>Note:-</b>Press <b>Control + f5</b> if banner not reflecting after upload.</p>
-														</div>
-														<div class="form-group text-center">
-															<input type="submit" class="btn btnThemeG3" name="" value="Submit">
-														</div>
-													</div>
-												</div>
-												<div class="clearfix"></div>
-											</div>
-										</div>
-									</form>
-								</div>
-								<div class="col-lg-4">
-									<form method="post" enctype="multipart/form-data" id="bannerForm3" action="">
-										<div class="box box-success siteLogo">
-											<div class="box-body">
-												<h4>Add / Edit Banner 3</h4>
-												<div class="row">
-													<div class="col-xs-12">
-														<img src="../img/banners/<?php if($row->banner3 != ''){ echo $row->banner3; }?>" class="img-responsive img-thumbnail">
-													</div>
-													<div class="col-xs-12">
-														<p class="mt-5 fontS12"><b>Note</b>:- Banner size - <b class="text-danger">1351px(Width) X 591px(Height).</b></p>
-													</div>
-													<div class="col-xs-12">
-														<div class="form-group mt-10">
-															<input type="file" class="form-control" name="banner-3" data-validetta="required">
-														</div>
-														<div class="col-xs-12">
-															<p class="fontS12"><b>Note:-</b>Only <b>jpg & jpeg</b> files supported.Max Size <b>1MB</b>.</p>
-														</div>
-														<div class="col-xs-12">
-															<p class="fontS12"><b>Note:-</b>Press <b>Control + f5</b> if banner not reflecting after upload.</p>
-														</div>
-														<div class="form-group text-center">
-															<input type="submit" class="btn btnThemeG3" name="" value="Submit">
-														</div>
-													</div>
-												</div>
-												<div class="clearfix"></div>
-											</div>
-										</div>
-									</form>
-								</div>
+								<?php } ?>
 							</div>
 						</div>
 					</div>

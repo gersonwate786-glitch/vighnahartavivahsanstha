@@ -169,21 +169,21 @@
 									if($row_banner->banner1 !="" && file_exists('img/banners/'.$row_banner->banner1)){ 
 								?>
                                 <div class="item">
-                                    <img src="img/banners/<?php echo $row_banner->banner1;?>" alt="banner-1">
+                                    <img src="img/banners/<?php echo $row_banner->banner1 . '?v=' . (@filemtime('img/banners/'.$row_banner->banner1) ?: time()); ?>" alt="banner-1">
                                 </div>
 								<?php 
 									}
 									if($row_banner->banner2 !="" && file_exists('img/banners/'.$row_banner->banner2)){ 
 								?>
                                 <div class="item">
-                                    <img src="img/banners/<?php echo $row_banner->banner2; ?>" alt="banner-2">
+                                    <img src="img/banners/<?php echo $row_banner->banner2 . '?v=' . (@filemtime('img/banners/'.$row_banner->banner2) ?: time()); ?>" alt="banner-2">
                                 </div>
 								<?php 
 									}
 									if($row_banner->banner3 !="" && file_exists('img/banners/'.$row_banner->banner3)){ 
 								?>
                                 <div class="item">
-                                    <img src="img/banners/<?php echo $row_banner->banner3;?>" alt="banner-3">
+                                    <img src="img/banners/<?php echo $row_banner->banner3 . '?v=' . (@filemtime('img/banners/'.$row_banner->banner3) ?: time()); ?>" alt="banner-3">
                                 </div>
 								<?php } ?>
                             </div>
